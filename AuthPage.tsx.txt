@@ -1,0 +1,290 @@
+
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
+import { Button } from '@/components/ui/button';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Helmet } from 'react-helmet';
+import { useToast } from '@/hooks/use-toast';
+// Form schemas
+const loginSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+});
+const signupSchema = z.object({
+  name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  password: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+  confirmPassword: z.string().min(6, { message: 'Password must be at least 6 characters' }),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+type LoginFormValues = z.infer<typeof loginSchema>;
+type SignupFormValues = z.infer<typeof signupSchema>;
+const AuthPage = () => {
+  const [activeTab, setActiveTab] = useState<string>('login');
+  const [, navigate] = useLocation();
+  const { toast } = useToast();
+  
+  // Login form
+  const loginForm = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: '',
+      password: '',
+    },
+  });
+  
+  // Signup form
+  const signupForm = useForm<SignupFormValues>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
+    },
+  });
+  
+  const onLoginSubmit = async (data: LoginFormValues) => {
+    try {
+      // Here we would normally make an API call to log in
+      // For now, we'll just simulate successful login
+      console.log('Login data:', data);
+      
+      toast({
+        title: "Login successful",
+        description: "Welcome back to The Calm Collective",
+      });
+      
+      // Redirect to home page
+      navigate('/');
+    } catch (error) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const onSignupSubmit = async (data: SignupFormValues) => {
+    try {
+      // Here we would normally make an API call to sign up
+      // For now, we'll just simulate successful signup
+      console.log('Signup data:', data);
+      
+      toast({
+        title: "Account created successfully",
+        description: "Welcome to The Calm Collective",
+      });
+      
+      // Redirect to home page
+      navigate('/');
+    } catch (error) {
+      console.error('Signup error:', error);
+      toast({
+        title: "Registration failed",
+        description: "There was a problem creating your account",
+        variant: "destructive",
+      });
+    }
+  };
+  return (
+    <>
+      <Helmet>
+        <title>Login & Register | The Calm Collective</title>
+        <meta name="description" content="Login or create a new account to access your dashboard and manage your orders." />
+      </Helmet>
+      
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Form Section */}
+            <div className="bg-white p-8 rounded-lg shadow-sm">
+              <h1 className="text-3xl font-heading font-semibold mb-6 text-center">
+                {activeTab === 'login' ? 'Welcome Back' : 'Create Account'}
+              </h1>
+              
+              <Tabs 
+                defaultValue="login" 
+                value={activeTab} 
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="grid grid-cols-2 mb-8">
+                  <TabsTrigger value="login">Login</TabsTrigger>
+                  <TabsTrigger value="signup">Sign Up</TabsTrigger>
+                </TabsList>
+                
+                <TabsContent value="login">
+                  <Form {...loginForm}>
+                    <form onSubmit={loginForm.handleSubmit(onLoginSubmit)} className="space-y-6">
+                      <FormField
+                        control={loginForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input placeholder="your.email@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={loginForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="••••••••" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <div className="text-right">
+                        <Button 
+                          type="button" 
+                          variant="link" 
+                          className="text-primary hover:text-primary/80 p-0"
+                        >
+                          Forgot password?
+                        </Button>
+                      </div>
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-primary hover:bg-primary/90 text-white"
+                      >
+                        Login
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+                
+                <TabsContent value="signup">
+                  <Form {...signupForm}>
+                    <form onSubmit={signupForm.handleSubmit(onSignupSubmit)} className="space-y-6">
+                      <FormField
+                        control={signupForm.control}
+                        name="name"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Full Name</FormLabel>
+                            <FormControl>
+                              <Input placeholder="John Doe" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signupForm.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input placeholder="your.email@example.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signupForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="••••••••" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={signupForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Confirm Password</FormLabel>
+                            <FormControl>
+                              <Input type="password" placeholder="••••••••" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button 
+                        type="submit" 
+                        className="w-full bg-primary hover:bg-primary/90 text-white"
+                      >
+                        Create Account
+                      </Button>
+                    </form>
+                  </Form>
+                </TabsContent>
+              </Tabs>
+            </div>
+            
+            {/* Hero Section */}
+            <div className="bg-gradient-to-br from-primary/30 to-secondary/30 p-8 rounded-lg flex flex-col justify-center">
+              <div className="max-w-md mx-auto text-center">
+                <h2 className="text-2xl md:text-3xl font-heading font-semibold mb-4">
+                  Enjoy a Personalized Wellness Experience
+                </h2>
+                <p className="text-lg mb-6">
+                  Create an account to track your orders, save your favorite products, and receive personalized wellness recommendations.
+                </p>
+                <div className="grid grid-cols-2 gap-6 mb-8">
+                  <div className="bg-white/70 backdrop-blur-sm p-4 rounded-lg">
+                    <h3 className="font-medium mb-2">Order Tracking</h3>
+                    <p className="text-sm text-text-light">Keep track of all your orders and reorder your favorite products with ease.</p>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm p-4 rounded-lg">
+                    <h3 className="font-medium mb-2">Exclusive Offers</h3>
+                    <p className="text-sm text-text-light">Get access to member-only discounts and early access to new products.</p>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm p-4 rounded-lg">
+                    <h3 className="font-medium mb-2">Wellness Profile</h3>
+                    <p className="text-sm text-text-light">Create your wellness profile and get personalized product recommendations.</p>
+                  </div>
+                  <div className="bg-white/70 backdrop-blur-sm p-4 rounded-lg">
+                    <h3 className="font-medium mb-2">Session Booking</h3>
+                    <p className="text-sm text-text-light">Easily book and manage your wellness sessions with our specialists.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+export default AuthPage;

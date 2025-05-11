@@ -1,0 +1,229 @@
+
+import { useState } from "react";
+import { Link, useLocation } from "wouter";
+import { ShoppingBag, Search, User, Menu, X, ChevronDown, ChevronUp } from "lucide-react";
+import { 
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
+import { useIsMobile } from '@/hooks/use-mobile';
+import { useCart } from '@/context/CartContext';
+import SearchDialog from '@/components/search/SearchDialog';
+const Header = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isProductsDropdownOpen, setIsProductsDropdownOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [location] = useLocation();
+  const isMobile = useIsMobile();
+  const { totalItems } = useCart();
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+  const toggleProductsDropdown = () => {
+    setIsProductsDropdownOpen(!isProductsDropdownOpen);
+  };
+  
+  const openSearch = () => {
+    setIsSearchOpen(true);
+  };
+  
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+  };
+  return (
+    <header className="bg-white shadow-sm sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex flex-col md:flex-row justify-between items-center">
+          <div className="flex items-center mb-4 md:mb-0">
+            <Link href="/" className="text-2xl md:text-3xl font-heading font-bold text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">
+              The Calm Collective
+            </Link>
+          </div>
+          
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex space-x-6 text-sm font-medium">
+            <Link href="/" className={`px-1 py-2 ${location === "/" ? "text-primary border-b-2 border-primary" : "text-text-dark hover:text-primary"}`}>
+              Home
+            </Link>
+            
+            <div className="relative group">
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex items-center text-text-dark hover:text-primary px-1 py-2">
+                  Products <ChevronDown className="ml-1 h-4 w-4" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="min-w-48">
+                  <DropdownMenuItem asChild>
+                    <Link href="/products?category=guided-journals">
+                      Guided Journals
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/products?category=meditation-tools">
+                      Meditation Tools
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/products?category=aromatherapy">
+                      Aromatherapy
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/products?category=herbal-teas">
+                      Herbal Teas
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/products?category=self-care-kits">
+                      Self-care Kits
+                    </Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+            
+            <Link href="/bundles" className={`px-1 py-2 ${location === "/bundles" ? "text-primary border-b-2 border-primary" : "text-text-dark hover:text-primary"}`}>
+              Bundles
+            </Link>
+            
+            <Link href="/sessions" className={`px-1 py-2 ${location === "/sessions" ? "text-primary border-b-2 border-primary" : "text-text-dark hover:text-primary"}`}>
+              Sessions
+            </Link>
+            
+            <Link href="/about" className={`px-1 py-2 ${location === "/about" ? "text-primary border-b-2 border-primary" : "text-text-dark hover:text-primary"}`}>
+              About
+            </Link>
+            
+            <Link href="/contact" className={`px-1 py-2 ${location === "/contact" ? "text-primary border-b-2 border-primary" : "text-text-dark hover:text-primary"}`}>
+              Contact
+            </Link>
+          </nav>
+          
+          {/* Icons */}
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={openSearch}
+              className="text-text-dark hover:text-primary"
+              aria-label="Search products"
+            >
+              <Search className="h-5 w-5" />
+            </button>
+            <Link 
+              href="/auth" 
+              className="text-text-dark hover:text-primary"
+              aria-label="Login or register"
+            >
+              <User className="h-5 w-5" />
+            </Link>
+            <Link href="/cart" className="text-text-dark hover:text-primary relative">
+              <ShoppingBag className="h-5 w-5" />
+              <span className="absolute -top-2 -right-2 bg-gradient-to-r from-primary to-secondary text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+                {totalItems}
+              </span>
+            </Link>
+          </div>
+          
+          {/* Search Dialog */}
+          <SearchDialog isOpen={isSearchOpen} onClose={closeSearch} />
+        </div>
+        
+        {/* Mobile menu button */}
+        <div className="md:hidden flex justify-between items-center mt-4">
+          <button 
+            onClick={toggleMenu}
+            className="text-text-dark focus:outline-none"
+          >
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
+        
+        {/* Mobile menu */}
+        {isMenuOpen && (
+          <div className="md:hidden mt-4 pb-4 glass-effect p-4 rounded-lg">
+            <nav className="flex flex-col space-y-3 text-sm font-medium">
+              <Link 
+                href="/" 
+                className={`px-3 py-2 rounded-md transition-all ${location === "/" 
+                  ? "gradient-primary font-medium text-white" 
+                  : "text-text-dark hover:bg-neutral"}`}
+              >
+                Home
+              </Link>
+              
+              <div className="relative">
+                <button 
+                  onClick={toggleProductsDropdown}
+                  className="w-full text-left flex items-center justify-between px-3 py-2 rounded-md text-text-dark hover:bg-neutral transition-all"
+                >
+                  Products 
+                  {isProductsDropdownOpen ? 
+                    <ChevronUp className="h-4 w-4" /> : 
+                    <ChevronDown className="h-4 w-4" />
+                  }
+                </button>
+                
+                {isProductsDropdownOpen && (
+                  <div className="bg-neutral mt-1 rounded-md overflow-hidden">
+                    <Link href="/products?category=guided-journals" className="block px-4 py-2 text-sm hover:bg-primary/10">
+                      Guided Journals
+                    </Link>
+                    <Link href="/products?category=meditation-tools" className="block px-4 py-2 text-sm hover:bg-primary/10">
+                      Meditation Tools
+                    </Link>
+                    <Link href="/products?category=aromatherapy" className="block px-4 py-2 text-sm hover:bg-primary/10">
+                      Aromatherapy
+                    </Link>
+                    <Link href="/products?category=herbal-teas" className="block px-4 py-2 text-sm hover:bg-primary/10">
+                      Herbal Teas
+                    </Link>
+                    <Link href="/products?category=self-care-kits" className="block px-4 py-2 text-sm hover:bg-primary/10">
+                      Self-care Kits
+                    </Link>
+                  </div>
+                )}
+              </div>
+              
+              <Link 
+                href="/bundles" 
+                className={`px-3 py-2 rounded-md transition-all ${location === "/bundles" 
+                  ? "gradient-secondary font-medium text-text-dark" 
+                  : "text-text-dark hover:bg-neutral"}`}
+              >
+                Bundles
+              </Link>
+              
+              <Link 
+                href="/sessions" 
+                className={`px-3 py-2 rounded-md transition-all ${location === "/sessions" 
+                  ? "gradient-accent font-medium text-text-dark" 
+                  : "text-text-dark hover:bg-neutral"}`}
+              >
+                Sessions
+              </Link>
+              
+              <Link 
+                href="/about" 
+                className={`px-3 py-2 rounded-md transition-all ${location === "/about" 
+                  ? "gradient-teal-blue font-medium text-white" 
+                  : "text-text-dark hover:bg-neutral"}`}
+              >
+                About
+              </Link>
+              
+              <Link 
+                href="/contact" 
+                className={`px-3 py-2 rounded-md transition-all ${location === "/contact" 
+                  ? "gradient-yellow-mint font-medium text-text-dark" 
+                  : "text-text-dark hover:bg-neutral"}`}
+              >
+                Contact
+              </Link>
+            </nav>
+          </div>
+        )}
+      </div>
+    </header>
+  );
+};
+export default Header;

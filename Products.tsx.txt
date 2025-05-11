@@ -1,0 +1,64 @@
+
+import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
+import { Product } from '@shared/schema';
+import ProductCard from '../components/products/ProductCard';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger
+} from '@/components/ui/accordion';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { Helmet } from 'react-helmet';
+const Products = () => {
+  const [location] = useLocation();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [sortOption, setSortOption] = useState('featured');
+  const [minRating, setMinRating] = useState<number | null>(null);
+  const { data: products, isLoading, error } = useQuery<Product[]>({
+    queryKey: ['/api/products'],
+  });
+  // Extract category from URL if it exists
+  useEffect(() => {
+    const params = new URLSearchParams(location.split('?')[1]);
+    const categoryParam = params.get('category');
+    if (categoryParam) {
+      setSelectedCategory(categoryParam);
+    }
+  }, [location]);
+  // Filter and sort products
+  const filteredProducts = products?.filter(product => {
+    // Filter by category
+    if (selectedCategory && product.category !== selectedCategory) {
+      return false;
+    }
+    
+    // Filter by price range
+    if (product.price < priceRange[0] || product.price > priceRange[1]) {
+      return false;
+    }
+    
+    // Filter by minimum rating
+    if (minRating !== null && product.averageRating < minRating) {
+      return false;
+    }
+    
+    return true;
+  }) || [];
+  // More code...
+};
+export default Products;
